@@ -87,8 +87,13 @@ FROM customer c
 WHERE EXISTS(
 	SELECT 1
 	FROM payment p
-	WHERE p.customer_id = c.customer_id
-);
+	WHERE p.customer_id = c.customer_id AND amount > 11)
+ORDER BY first_name, last_name;
+
+SELECT first_name, last_name
+FROM customer
+WHERE EXISTS (SELECT NULL)
+ORDER BY first_name, last_name;
 --LIKE
 SELECT first_name, last_name
 FROM customer
@@ -233,6 +238,84 @@ WHERE f1.film_id = 8;
 SELECT *
 FROM T1
 CROSS JOIN T2;
+
+--				Subqueries
+--General
+SELECT film_id, title, rental_rate
+FROM film
+WHERE rental_rate > (
+	SELECT AVG (rental_rate)
+	FROM film
+);
+
+SELECT film_id, title
+FROM film
+WHERE film_id IN (
+	SELECT i.film_id
+	FROM rental
+	INNER JOIN inventory i ON i.inventory_id = rental.inventory_id
+	WHERE return_date BETWEEN '2005-05-29' AND '2005-05-30'
+);
+
+SELECT first_name, last_name
+FROM customer
+WHERE EXISTS (
+	SELECT 1
+	FROM payment
+	WHERE payment.customer_id = customer.customer_id
+);
+--EXISTS
+SELECT first_name, last_name
+FROM customer c
+WHERE EXISTS(
+	SELECT 1
+	FROM payment p
+	WHERE p.customer_id = c.customer_id AND amount > 11)
+ORDER BY first_name, last_name;
+
+SELECT first_name, last_name
+FROM customer
+WHERE EXISTS (SELECT NULL)
+ORDER BY first_name, last_name;
+--ANY
+SELECT MAX(length)
+FROM film
+INNER JOIN film_category USING(film_id)
+GROUP BY category_id;
+
+SELECT title, length
+FROM film
+WHERE length >= ANY (
+	SELECT MAX(length)
+	FROM film
+	INNER JOIN film_category USING(film_id)
+	GROUP BY category_id
+);
+
+SELECT title, category_id
+FROM film
+INNER JOIN film_category USING(film_id)
+WHERE category_id = ANY (
+	SELECT category_id
+	FROM category
+	WHERE name = 'Action' OR name = 'Drama'
+);
+--ALL
+SELECT ROUND(AVG(length), 2) avg_len, rating
+FROM film
+GROUP BY rating
+ORDER BY avg_len DESC;
+
+SELECT film_id, title, length
+FROM film
+WHERE length > ALL (
+	SELECT ROUND(AVG(length), 2)
+	FROM film
+	GROUP BY rating
+)
+ORDER BY length;
+
+
 
 
 
