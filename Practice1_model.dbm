@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.1" last-position="0,0" last-zoom="1"
+	 default-schema="public" default-owner="postgres">
+<database name="Practice1" encoding="UTF8" lc-collate="en_US.UTF-8" lc-ctype="en_US.UTF-8" is-template="false" allow-conns="true">
+	<role name="postgres"/>
+	<tablespace name="pg_default"/>
+</database>
+
+<schema name="public" rect-visible="true" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="license">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="40" y="40"/>
+	<column name="code" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="exp_date">
+		<type name="date" length="0"/>
+	</column>
+	<constraint name="license_pkey" type="pk-constr" table="public.license">
+		<columns names="code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="the_limit">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="100" y="140"/>
+	<column name="id" not-null="true" identity-type="BY DEFAULT">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="the_group">
+		<type name="character varying" length="7"/>
+	</column>
+	<column name="criterium">
+		<type name="character varying" length="63"/>
+	</column>
+	<column name="value">
+		<type name="character varying" length="63"/>
+	</column>
+	<constraint name="ck_group" type="ck-constr" table="public.the_limit">
+			<expression><![CDATA[((the_group)::text = ANY ((ARRAY['Clients'::character varying, 'Events'::character varying, 'Time'::character varying])::text[]))]]></expression>
+	</constraint>
+	<constraint name="the_limit_pkey" type="pk-constr" table="public.the_limit">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="the_limit_id_seq"
+	 start="1" increment="1"
+	 min-value="1" max-value="2147483647"
+	 cache="1" cycle="false" sql-disabled="true">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="limits_license">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="660" y="60"/>
+	<column name="license_code" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="limit_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="limits_license_pkey" type="pk-constr" table="public.limits_license">
+		<columns names="license_code,limit_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="sublimit">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="20" y="280"/>
+	<column name="parent_limit_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="criterium" not-null="true">
+		<type name="character varying" length="63"/>
+	</column>
+	<column name="value">
+		<type name="character varying" length="63"/>
+	</column>
+	<constraint name="ck_allowed" type="ck-constr" table="public.sublimit">
+			<expression><![CDATA[((((criterium)::text = 'xDRs'::text) AND ((value)::text = ANY ((ARRAY['1M'::character varying, '5M'::character varying, '10M'::character varying])::text[]))) OR (((criterium)::text = 'Orig Volume'::text) AND ((value)::text = ANY ((ARRAY['10M min'::character varying, '20M min'::character varying])::text[]))) OR ((criterium)::text <> ALL ((ARRAY['xDRs'::character varying, 'Orig Volume'::character varying])::text[])))]]></expression>
+	</constraint>
+	<constraint name="sublimit_pkey" type="pk-constr" table="public.sublimit">
+		<columns names="parent_limit_id,criterium" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="person">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="960" y="220"/>
+	<column name="id" not-null="true" identity-type="BY DEFAULT">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="full_name">
+		<type name="character varying" length="63"/>
+	</column>
+	<column name="email">
+		<type name="character varying" length="63"/>
+	</column>
+	<column name="phone">
+		<type name="character varying" length="15"/>
+	</column>
+	<column name="job_title">
+		<type name="character varying" length="31"/>
+	</column>
+	<constraint name="person_pkey" type="pk-constr" table="public.person">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="person_id_seq"
+	 start="1" increment="1"
+	 min-value="1" max-value="2147483647"
+	 cache="1" cycle="false" sql-disabled="true">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="customer">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="40" y="440"/>
+	<column name="id" not-null="true" identity-type="BY DEFAULT">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="name">
+		<type name="character varying" length="31"/>
+	</column>
+	<column name="refered_customer_id">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="customer_pkey" type="pk-constr" table="public.customer">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="customer_id_seq"
+	 start="1" increment="1"
+	 min-value="1" max-value="2147483647"
+	 cache="1" cycle="false" sql-disabled="true">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="contact">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="540" y="240"/>
+	<column name="customer_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="person_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="contact_pkey" type="pk-constr" table="public.contact">
+		<columns names="customer_id,person_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<constraint name="limits_license_license_code_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.license" table="public.limits_license">
+	<columns names="license_code" ref-type="src-columns"/>
+	<columns names="code" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="limits_license_limit_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.the_limit" table="public.limits_license">
+	<columns names="limit_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="sublimit_parent_limit_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.the_limit" table="public.sublimit">
+	<columns names="parent_limit_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="customer_refered_customer_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.customer" table="public.customer">
+	<columns names="refered_customer_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="contact_customer_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.customer" table="public.contact">
+	<columns names="customer_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="contact_person_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.person" table="public.contact">
+	<columns names="person_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_limits_license_license" type="relfk"
+	 custom-color="#c39fc1"
+	 src-table="public.limits_license"
+	 dst-table="public.license" reference-fk="limits_license_license_code_fkey"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_limits_license_the_limit" type="relfk"
+	 custom-color="#e540f5"
+	 src-table="public.limits_license"
+	 dst-table="public.the_limit" reference-fk="limits_license_limit_id_fkey"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_sublimit_the_limit" type="relfk"
+	 custom-color="#43ab53"
+	 src-table="public.sublimit"
+	 dst-table="public.the_limit" reference-fk="sublimit_parent_limit_id_fkey"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_customer_customer" type="relfk"
+	 custom-color="#06857e"
+	 src-table="public.customer"
+	 dst-table="public.customer" reference-fk="customer_refered_customer_id_fkey"
+	 src-required="false" dst-required="false">
+	<line>
+		<position x="443.536" y="478.417"/>
+	<position x="443.536" y="429"/>
+	<position x="301.691" y="429"/>
+	</line>
+	<label ref-type="src-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+<relationship name="rel_contact_customer" type="relfk"
+	 custom-color="#4e7a2d"
+	 src-table="public.contact"
+	 dst-table="public.customer" reference-fk="contact_customer_id_fkey"
+	 src-required="false" dst-required="false">
+	<label ref-type="dst-label">
+		<position x="0" y="0"/>
+	</label>
+</relationship>
+
+<relationship name="rel_contact_person" type="relfk"
+	 custom-color="#a55134"
+	 src-table="public.contact"
+	 dst-table="public.person" reference-fk="contact_person_id_fkey"
+	 src-required="false" dst-required="false"/>
+
+</dbmodel>
