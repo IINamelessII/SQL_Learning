@@ -221,20 +221,21 @@ FROM film f1
 INNER JOIN film f2 ON f1.film_id <> f2.film_id AND f1.length = f2.length
 WHERE f1.film_id = 8;
 --CROSS JOIN
--- CREATE TABLE T1 (label CHAR(1) PRIMARY KEY);
+CREATE TABLE T1 (label CHAR(1) PRIMARY KEY);
  
--- CREATE TABLE T2 (score INT PRIMARY KEY);
+CREATE TABLE T2 (score INT PRIMARY KEY);
  
--- INSERT INTO T1 (label)
--- VALUES
---    ('A'),
---    ('B');
+INSERT INTO T1 (label)
+VALUES
+   ('A'),
+   ('B');
  
--- INSERT INTO T2 (score)
--- VALUES
---    (1),
---    (2),
---    (3);
+INSERT INTO T2 (score)
+VALUES
+   (1),
+   (2),
+   (3);
+--------
 SELECT *
 FROM T1
 CROSS JOIN T2;
