@@ -5,7 +5,10 @@ CREATE TABLE license (
 	exp_date date
 );
 
-CREATE TABLE the_limit (
+-- code - type
+
+
+CREATE TABLE limits (
 	id serial PRIMARY KEY,
 	the_group limit_group,
 	criterium varchar(63),
@@ -41,6 +44,7 @@ CREATE TABLE person (
 	phone varchar(15),
 	job_title varchar(31)
 );
+-- nulls
 
 CREATE TABLE customer (
 	id serial PRIMARY KEY,
@@ -48,6 +52,8 @@ CREATE TABLE customer (
 	refered_customer_id int,
 	FOREIGN KEY (refered_customer_id) REFERENCES customer(id)
 );
+-- name - null?
+-- FK - create separately, formodes
 
 CREATE TABLE contact (
 	customer_id int,
