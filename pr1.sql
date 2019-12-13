@@ -38,20 +38,23 @@ CREATE TABLE limits (
 	id serial PRIMARY KEY,
 	the_group varchar NOT NULL,
 	sublimit varchar NOT NULL,
-	values varchar[] NOT NULL -- varchar or bigint?
+	values varchar[] NOT NULL -- varchar or int?
 );
 -- 3, 'Time', xDRs, Array['1M', '5M', '10M']
 
-INSERT INTO limits (the_group, sublimit, values) VALUES 
-('Clients', 'Active Clients', Array['1T', '5T', '10T']),
-('Clients', 'Accounts', Array['1T', '5T', '10T']),
-('Events', 'Orig Volume', Array['10M', '20M']),
-('Events', 'xDRs', Array['1M', '5M', '10M']),
-('Data', 'Orig Volume', Array['10M', '20M']),
-('Data', 'xDRs', Array['1M', '5M', '10M']),
-('Time', 'Orig Volume', Array['10M', '20M']),
-('Time', 'Volume', Array['25M', '50M']),
-('Time', 'xDRs', Array['1M', '5M', '10M']);
+INSERT INTO limits (id, the_group, sublimit, values) VALUES 
+(1, 'Clients', 'Active Clients', Array['1T', '5T', '10T']),
+(2, 'Clients', 'Accounts', Array['1T', '5T', '10T']),
+(3, 'Events', 'Orig Volume', Array['10M', '20M']),
+(4, 'Events', 'xDRs', Array['1M', '5M', '10M']),
+(5, 'Data', 'Orig Volume', Array['10M', '20M']),
+(6, 'Data', 'xDRs', Array['1M', '5M', '10M']),
+(7, 'Time', 'Orig Volume', Array['10M', '20M']),
+(8, 'Time', 'Volume', Array['25M', '50M']),
+(9, 'Time', 'xDRs', Array['1M', '5M', '10M']);
+
+-- Select sublimits with values for UI
+SELECT sublimit, values FROM limits WHERE the_group = 'Smth';
 
 
 
@@ -60,17 +63,16 @@ CREATE TABLE license_limits (
     --should we add id and make it PK?
     licenses_id int,
     limits_id int,
-    value varchar NOT NULL, -- varchar or bigint?
+    value varchar NOT NULL, -- varchar or int?
     PRIMARY KEY (licenses_id, limits_id)
 );
 -- 2, 3, '1M'
+--Should we add constraint to check if ll.value in related (ll.limits_id = l.id) l.values?
 
 ALTER TABLE license_limits
 ADD CONSTRAINT FK_License_LicenseLimit -- name?
 FOREIGN KEY (licenses_id) REFERENCES licenses (id)
-ON DELETE CASCADE;
-
-ALTER TABLE license_limits
+ON DELETE CASCADE,
 ADD CONSTRAINT FK_Limit_LicenseLimit -- name?
 FOREIGN KEY (limits_id) REFERENCES limits (id)
 ON DELETE CASCADE;
@@ -89,9 +91,7 @@ CREATE TABLE customers (
 ALTER TABLE customers
 ADD CONSTRAINT FK_ParentCustomer_Customer -- name?
 FOREIGN KEY (parent_customers_id) REFERENCES customers (id)
-ON DELETE SET NULL;
-
-ALTER TABLE customers
+ON DELETE SET NULL,
 ADD CONSTRAINT FK_LicenseCustomer -- name?
 FOREIGN KEY (licenses_id) REFERENCES licenses (id)
 ON DELETE RESTRICT;
@@ -147,6 +147,74 @@ CREATE TRIGGER tr_update_refers_count
     FOR EACH ROW
     EXECUTE PROCEDURE update_refers_count();
 
+
+
+
+
 -- License limits are accessed very often from different places
--- Select sublimits with values for UI
-SELECT sublimit, values FROM limits WHERE the_group = 'Smth';
+ALTER TABLE licenses
+ADD COLUMN limit_active_clients varchar,
+ADD COLUMN limit_accounts varchar,
+ADD COLUMN limit_events_orig_volume varchar,
+ADD COLUMN limit_events_xDRs varchar,
+ADD COLUMN limit_data_orig_volume varchar,
+ADD COLUMN limit_data_xDRs varchar,
+ADD COLUMN limit_time_orig_volume varchar,
+ADD COLUMN limit_time_volume varchar,
+ADD COLUMN limit_time_xDRs varchar;
+
+
+CREATE OR REPLACE FUNCTION update_license_limits()
+    RETURNS trigger AS
+$$
+BEGIN
+    IF NEW.parent_customers_id IS NOT NULL THEN
+        UPDATE licenses SET limit_active_clients = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 1;
+        UPDATE licenses SET limit_accounts = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 2;
+        UPDATE licenses SET limit_events_orig_volume = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 3;
+        UPDATE licenses SET limit_events_xDRs = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 4;
+        UPDATE licenses SET limit_data_orig_volume = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 5;
+        UPDATE licenses SET limit_data_xDRs = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 6;
+        UPDATE licenses SET limit_time_orig_volume = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 7;
+        UPDATE licenses SET limit_time_volume = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 8;
+        UPDATE licenses SET limit_time_xDRs = NEW.value WHERE id = NEW.limits_id AND NEW.limits_id = 9;
+    END IF;
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE PLPGSQL;
+
+CREATE TRIGGER tr_insert_license_limits
+    BEFORE INSERT
+    ON license_limits
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_license_limits();
+
+CREATE TRIGGER tr_update_license_limits
+    BEFORE UPDATE
+    ON license_limits
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_license_limits();
+
+
+
+
+
+
+
+
+
+
+
+-- CASE NEW.limits_id
+-- WHEN 1 THEN UPDATE licenses SET limit_active_clients = NEW.value WHERE id = NEW.limits_id
+-- WHEN 2 THEN UPDATE licenses SET limit_accounts = NEW.value WHERE id = NEW.limits_id
+-- WHEN 3 THEN UPDATE licenses SET limit_events_orig_volume = NEW.value WHERE id = NEW.limits_id
+-- WHEN 4 THEN UPDATE licenses SET limit_events_xDRs = NEW.value WHERE id = NEW.limits_id
+-- WHEN 5 THEN UPDATE licenses SET limit_data_orig_volume = NEW.value WHERE id = NEW.limits_id
+-- WHEN 6 THEN UPDATE licenses SET limit_data_xDRs = NEW.value WHERE id = NEW.limits_id
+-- WHEN 7 THEN UPDATE licenses SET limit_time_orig_volume = NEW.value WHERE id = NEW.limits_id
+-- WHEN 8 THEN UPDATE licenses SET limit_time_volume = NEW.value WHERE id = NEW.limits_id
+-- WHEN 9 THEN UPDATE licenses SET limit_time_xDRs = NEW.value WHERE id = NEW.limits_id
+-- END;
