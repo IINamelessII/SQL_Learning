@@ -5,34 +5,6 @@ CREATE TABLE licenses (
 );
 -- 2, 'SOME-CODE-333-AFDK', '2020-01-00 10:00:00+000'
 
-ALTER TABLE licenses ALTER COLUMN exp_date
-SET DEFAULT now() + '1 year'::interval; --best way to calc?
-
---Auto-generate code if needed
-CREATE OR REPLACE FUNCTION insert_licenses_code()
-    RETURNS trigger AS
-$$
-BEGIN
-    IF NEW.code IS NULL THEN
-        -- check that SMTH-id isn't exist
-        -- or we should add business rule to
-        -- name licenses codes differ from 'SMTH-[number]'
-        NEW.code := 'SMTH-' || NEW.id;
-    END IF;
-
-    RETURN NEW;
-END;
-$$
-LANGUAGE PLPGSQL;
-
-CREATE TRIGGER tr_insert_licenses_code
-    BEFORE INSERT
-    ON licenses
-    FOR EACH ROW
-    EXECUTE PROCEDURE insert_licenses_code();
-
-
-
 
 CREATE TABLE limits (
 	id serial PRIMARY KEY,
@@ -59,7 +31,7 @@ SELECT sublimit, values FROM limits WHERE the_group = 'Smth';
 
 
 
-CREATE TABLE license_limits (
+CREATE TABLE licenses_limits (
     --should we add id and make it PK?
     licenses_id int,
     limits_id int,
@@ -70,12 +42,12 @@ CREATE TABLE license_limits (
 --Should we add constraint to check if ll.value in related (ll.limits_id = l.id) l.values?
 
 ALTER TABLE license_limits
-ADD CONSTRAINT FK_License_LicenseLimit -- name?
-FOREIGN KEY (licenses_id) REFERENCES licenses (id)
-ON DELETE CASCADE,
-ADD CONSTRAINT FK_Limit_LicenseLimit -- name?
-FOREIGN KEY (limits_id) REFERENCES limits (id)
-ON DELETE CASCADE;
+    ADD CONSTRAINT FK_License_LicenseLimit -- name?
+        FOREIGN KEY (licenses_id) REFERENCES licenses (id)
+        ON DELETE CASCADE,
+    ADD CONSTRAINT FK_Limit_LicenseLimit -- name?
+        FOREIGN KEY (limits_id) REFERENCES limits (id)
+        ON DELETE CASCADE;
 
 
 
@@ -89,12 +61,12 @@ CREATE TABLE customers (
 -- 2, 'Smth Mobile', NULL, 2
 
 ALTER TABLE customers
-ADD CONSTRAINT FK_ParentCustomer_Customer -- name?
-FOREIGN KEY (parent_customers_id) REFERENCES customers (id)
-ON DELETE SET NULL,
-ADD CONSTRAINT FK_LicenseCustomer -- name?
-FOREIGN KEY (licenses_id) REFERENCES licenses (id)
-ON DELETE RESTRICT;
+    ADD CONSTRAINT FK_ParentCustomer_Customer -- name?
+        FOREIGN KEY (parent_customers_id) REFERENCES customers (id)
+        ON DELETE SET NULL,
+    ADD CONSTRAINT FK_LicenseCustomer -- name?
+        FOREIGN KEY (licenses_id) REFERENCES licenses (id)
+        ON DELETE RESTRICT;
 
 
 
@@ -110,9 +82,9 @@ CREATE TABLE contact_persons (
 -- 'John Doe', 'john.doe@example.com', '(443)355-2222', 2, 'Sales Manager'
 
 ALTER TABLE contact_persons
-ADD CONSTRAINT FK_Company_ContactPersons -- name?
-FOREIGN KEY (companies_id) REFERENCES customers (id)
-ON DELETE CASCADE;
+    ADD CONSTRAINT FK_Company_ContactPersons -- name?
+        FOREIGN KEY (companies_id) REFERENCES customers (id)
+        ON DELETE CASCADE;
 
 
 
